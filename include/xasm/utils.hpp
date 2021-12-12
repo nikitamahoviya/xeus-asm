@@ -31,6 +31,7 @@ bool validityRegisters(string reg);
 bool validityRegisterPair(string reg);
 int registerNumber(string str);
 string hexAdd(string arg1, string arg2, bool flag[], bool carry);
+string hexSub(string arg1, string arg2, bool flag[], bool carry);
 
 // map<string, function<void(string, string[], bool[], map<string, string> &)>>
 // instruction1{{"add", ADD}};

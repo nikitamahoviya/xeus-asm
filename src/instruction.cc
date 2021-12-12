@@ -53,6 +53,53 @@ void ADD(string arg1, string registers[], bool flag[],
   }
 }
 
+void SUB(string arg1, string registers[], bool flag[],
+         map<string, string> &memory, string &last_error) {
+
+  int length = arg1.length();
+  if (length == 1) {
+
+    if (validityRegisters(arg1)) {
+
+      if (arg1 != "M") {
+
+        /*Fetches index of register to access array string registers[]*/
+        int registerID = registerNumber(arg1);
+        /*Converting decimal value to string format and storing in accumulator*/
+        registers[0] = hexSub(registers[registerID], registers[0], flag, true);
+
+      } else {
+
+        /*Fetches data of HL pair*/
+        string address = "";
+        address = address + registers[5] + registers[6];
+        if (address >= "0000" && address <= "FFFF") {
+
+          /*Converting decimal value to string format and storing in
+           * accumulator*/
+          registers[0] = hexSub(memory[address], registers[0], flag, true);
+
+        } else {
+          last_error = "Error: " + arg1 +
+                       "Address out of bounds\nThe program will quit\n";
+          return;
+          /*error message of address out of bounds*/
+        }
+      }
+    } else {
+      last_error = "Error: " + arg1 +
+                   "\nInvalid register details\nThe program will quit\n";
+      return;
+      /*error of invalid register details*/
+    }
+  } else {
+    last_error =
+        "Error: " + arg1 + "\nInvalid arguments\nThe program will quit\n";
+    return;
+    /*Error message of invalid arguments*/
+  }
+}
+
 void MOV(string argument1, string argument2, string registers[], bool flag[],
          map<string, string> &memory, string &last_error) {
   int l1 = argument1.length();

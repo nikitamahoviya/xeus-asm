@@ -30,7 +30,8 @@ string nextAddress(string str, int n) {
 }
 
 string executionCode(string command, string Registers[], bool flag[],
-                     map<string, string> &memory, string programCounter, string &last_error) {
+                     map<string, string> &memory, string programCounter,
+                     string &last_error) {
   vector<string> commandPart;
   // string command = memory[programCounter];
   string inst;
@@ -51,6 +52,10 @@ string executionCode(string command, string Registers[], bool flag[],
   //                              memory);
   if (commandPart[0] == "MOV") {
     MOV(commandPart[1], commandPart[2], Registers, flag, memory, last_error);
+    commandSize = operationSize(commandPart[0]);
+    return nextAddress(programCounter, commandSize);
+  } else if (commandPart[0] == "SUB") {
+    SUB(commandPart[1], Registers, flag, memory, last_error);
     commandSize = operationSize(commandPart[0]);
     return nextAddress(programCounter, commandSize);
   } else if (commandPart[0] == "ADD") {
@@ -81,7 +86,7 @@ bool validityAddress(string data) {
 }
 
 int operationSize(string str) {
-  string one[] = {"HLT", "MOV", "ADD"};
+  string one[] = {"HLT", "MOV", "ADD", "SUB"};
   string two[] = {"MVI"};
   string three[] = {"SET"};
   const char *ch = str.c_str();
@@ -221,19 +226,76 @@ string hexAdd(string arg1, string arg2, bool flag[], bool carry) {
   return resultant;
 }
 
-bool isHexadecimal(char a){
+bool isHexadecimal(char a) {
 
-	if((a>='0' && a<='9') || (a>='A' && a<='F'))
-		return true;
-	else
-		return false;
+  if ((a >= '0' && a <= '9') || (a >= 'A' && a <= 'F'))
+    return true;
+  else
+    return false;
 }
 
-bool validityData(string a){
+bool validityData(string a) {
 
-	int l=a.length();
-	if(l==2 && isHexadecimal(a[0]) && isHexadecimal(a[1]))
-		return true;
-	else 
-		return false;
+  int l = a.length();
+  if (l == 2 && isHexadecimal(a[0]) && isHexadecimal(a[1]))
+    return true;
+  else
+    return false;
+}
+
+string hexSub(string arg1, string arg2, bool flag[], bool carry) {
+
+  string resultant = "";
+  int variable;
+  int parity;
+  int value1[2];
+  int value2[2];
+  int tempAnswer[2];
+  hexToDecimal(arg1, value1);
+  hexToDecimal(arg2, value2);
+
+  if (value1[1] < value2[1]) {
+
+    tempAnswer[1] = (16 + value1[1]) - value2[1];
+    --value1[0];
+  } else {
+    tempAnswer[1] = value1[1] - value2[1];
+  }
+
+  if (value1[0] < value2[0]) {
+
+    if (carry == true)
+      flag[0] = true;
+
+    tempAnswer[0] = (16 + value1[0] - value2[0]);
+  } else
+    tempAnswer[0] = value1[0] - value2[0];
+
+  variable = tempAnswer[0] * 16 + tempAnswer[1];
+  bitset<8> dataInBinary(variable);
+  /*Setting parity flag*/
+  parity = dataInBinary.count();
+  if (parity % 2 == 0 && parity != 0)
+    flag[2] = true;
+  else
+    flag[2] = false;
+  /*Setting sign flag*/
+  flag[7] = dataInBinary[7];
+  /*Setting zero flag*/
+  if (parity == 0)
+    flag[6] = true;
+  else
+    flag[6] = false;
+
+  cout << "Debug pt 1" << endl;
+  /*Convert decimal data to hexadecimal and store in accumulator*/
+  for (int i = 1; i >= 0; --i) {
+
+    if (tempAnswer[i] >= 0 && tempAnswer[i] <= 9)
+      resultant = char('0' + tempAnswer[i]) + resultant;
+    else if (tempAnswer[i] >= 10 && tempAnswer[i] <= 15)
+      resultant = (char)('A' + (tempAnswer[i] - 10)) + resultant;
+  }
+
+  return resultant;
 }
